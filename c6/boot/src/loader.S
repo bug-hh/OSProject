@@ -111,10 +111,42 @@ p_mode_start:
 
 	;创建页目录和页表并初始化页内存位图
 	call setup_page
+  
+  ; 把 gdt 放到内核空间（内核所对应的虚拟地址空间）
+  ; 这里先把 gdt 的信息保存到 [gdt_ptr]
+  sgdt [gdt_ptr]
+  
+  ; 把视频段放到内核空间与其他用户进程共享
+  ; 先要找到 gdt 的起始位置, gdt 指针，前2字节是gdt界限，后4字节是gdt起始地址
+  mov ebx, [gdt_ptr + 2] ; 现在 ebx 里的值就是 GDT_BASE
+  or dword [ebx + 0x18 + 4], 0xC0000000
+  
+  ; 把 gdt 放到内核空间
+  add [gdt_ptr + 2], 0xC0000000
+  add esp, 0xC0000000
+  
+	;页目录赋值给CR3
+	mov eax, PAGE_DIR_TABLE_POS
+	mov cr3, eax
+	
+	;打开cr0的pg位（第31位）
+	mov eax, cr0
+	or eax, 0x80000000
+	mov cr0, eax
+
+	;开启分页后，用gdt新的地址重新加载
+	lgdt [gdt_ptr]
+
+	mov eax, SELECTOR_VIDEO
+	mov gs, eax
+	mov byte [gs :320], 'V'
+  
+  jmp $
+  
+  
 
 ;-------- 创建页目录和页表 --------
 setup_page:
-
 ;把页目录所占空间清0, 一个页目录表有 1024 个页目录项，每个页目录占 4B，所以一个页目录表就占 4096B
 	mov ecx, 4096
 	xor esi, esi
@@ -124,8 +156,63 @@ setup_page:
 	loop .clear_page_dir
 
 ; 开始创建页目录项，这个页目录表起始地址是在 0x100000,这个地址是任选的，只要可用就行
+.create_pde:
     mov eax, PAGE_DIR_TABLE_POS
-    这里让页表和页目录表紧挨着，因为页目录表本身大小是 4K，所以第一个
+    ;这里让页表和页目录表紧挨着，因为页目录表本身大小是 4K，4K = 2^12 = 0x1000, 
+    ;所以第一个页表的位置就是，0x101000
+    add eax, 0x1000
+    mov ebx, eax 
+    
+    ; 设置页目录项的属性，用户级别 | 可写 | 存在于内存中
+    or eax, PG_US_U | PG_RW_W | PG_P 
+    ; 我们要为 kernel 留出 1G 的内存空间，同时每个页表代表 4M 内存，
+    ; 那么需要留出 1G/4M = 2^30/2^22 = 2^8 = 256 个页表,
+    ; 由于页目录表中总共只有 1024 个页表，所以剩下 1024 - 256 = 768 = 0x300 个页表给所有用户进程
+    ; 又因为每个页表的大小是 4K, 所以 768 * 4 = 3072 = 0xC00，
+    ; 也就是说从第 768 个页目录项开始(或者说从地址 【页目录起始地址 + 0xC00】 开始属于内核空间），属于内核空间
+    ; 所以从[0, 768) 这一段内存属于用户空间
+    ; 这里把第 0 个目录项 和 第 768 个目录项都保存【第一个页表】的地址
+    mov [PAGE_DIR_TABLE_POS + 0x00], eax
+    mov [PAGE_DIR_TABLE_POS + 0xC00], eax 
+    
+    ; 这里让最后一个页目录项指向页目录表自己, 注意，是 4092，不是 4096
+    sub eax, 0x1000
+    mov [PAGE_DIR_TABLE_POS + 4092], eax 
+    
+    ; 现在开始给内核空间创建页表项 PTE
+    ; 因为我们的内核占用内存不会超过 1M，所以就只创建 1M 大小的页表项, 因为每个页表项大小为 4K, 所以
+    ; 1M/4K  = 2^20 / 2^12 = 2^8 = 256 个页表项
+    mov ecx, 256
+    mov esi, 0
+    mov edx, PG_US_U | PG_RW_W | PG_P
+.create_pte:
+    ; 此时的 ebx 正是第一个页表的位置
+    mov [ebx + esi*4], edx 
+    add edx, 4096
+    inc esi
+    loop .create_pte
+; 创建内核其他页表的 PDE
+    mov eax, PAGE_DIR_TABLE_POS
+    add eax, 0x2000 ; 这是第二个页表的位置
+    or eax, PG_US_U | PG_RW_W | PG_P 
+    mov ebx, PAGE_DIR_TABLE_POS
+    mov ecx, 254
+    mov esi, 769
+.create_kernel_pde:
+    mov [ebx+esi*4], eax 
+    inc esi 
+    add eax, 0x1000
+    loop .create_kernel_pde
+    ret 
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
 
