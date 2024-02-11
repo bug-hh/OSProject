@@ -5,7 +5,7 @@ SELECTOR_VIDEO	equ	(0x0003 << 3) + TI_GDT + RPL0
 
 [bits 32]
 section .text 
-put_int_buff dq 0
+put_int_buffer dq 0
 
 ; 在汇编语言中，用 global 修饰的函数，可以被外部调用
 global put_char
@@ -146,8 +146,6 @@ put_str:
   add esp, 4
   inc ebx
   jmp .goon
-  
-
 .str_over:
   pop ecx 
   pop ebx
