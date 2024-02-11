@@ -143,14 +143,14 @@ p_mode_start:
   
   jmp SELECTOR_CODE:enter_kernel
 
-.enter_kernel:
+enter_kernel:
   ; 这里是按照 ELF 格式，把 kernel.bin 中的段（segment) 展开到（复制到）内存中的相应位置。
   call kernel_init
 	mov esp, 0xc009f000	;给栈选个高地址且不影响内存其他位置的地方
 	jmp KERNEL_ENTRY_POINT	
   
   
-.kernel_init:
+kernel_init:
   xor eax, eax
   xor ebx, ebx  ; ebx 记录程序头表地址
   xor ecx, ecx  ; ecx 记录程序头表中 program header 数量
@@ -168,8 +168,8 @@ p_mode_start:
 
 .each_segment:
   ; 获取程序头的 p_type
-  cmp [ebx + 0], PT_NULL
-  je PTNULL
+  cmp byte [ebx + 0], PT_NULL
+  je .PTNULL
   
   ; 类似与调用 memcpy 函数
   ; size 获取程序头的 p_filesz, 然后压栈
