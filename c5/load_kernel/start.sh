@@ -1,4 +1,16 @@
 #!/bin/bash
+if [ ! -d "boot/bin" ]; then
+  mkdir -p boot/bin
+fi
+
+if [ ! -d "kernel/obj" ]; then
+  mkdir -p kernel/obj
+fi
+
+if [ ! -d "kernel/bin" ]; then
+  mkdir -p kernel/bin
+fi
+
 nasm -I ./boot/src/include/ -o ./boot/bin/mbr.bin boot/src/mbr.S
 nasm -I ./boot/src/include/ -o ./boot/bin/loader.bin boot/src/loader.S
 
