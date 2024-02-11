@@ -155,61 +155,60 @@ put_str:
 
 global put_int
 put_int:
-  pushad 
-  mov edi, 7
-  mov ebp, esp 
-  ; 36 = pushad 的 8 个寄存器 + put_int 的返回地址
-  ; 获取 put_int 入参
-  mov eax, [esp+36] 
-  mov edx, eax 
-.base16_4:
-  ; 获取 1 位十六进制数
-  and edx, 0x0000000F
-  cmp edx, 9
-  ; 如果超过 9，那就要打印 A-F
-  jg .A2F
-  add dl, '0'
-  jmp .store
-.A2F:
-  sub dl, 'A'
-  add dl, 'A'
+	pushad
+	mov ebp, esp
+	mov eax, [ebp + 4*9]	;call 的返回地址 4 字节，pushad 占 8 个 4 字节
+	mov edx, eax		;参数数字备份
+	mov edi, 7		;指定在put_int_buffer中的初始偏移量
+	mov ecx, 8		;32位数字中，十六进制数字的位数是8个
+	mov ebx, put_int_buffer
+
+;将 32 位数字从高位到低位逐个处理
+.based16_4bits:
+	and edx, 0x0000000F	;取出最后一个16进制数
+	cmp edx, 9		;判断是否大于9
+	jg .is_A2F
+	add edx, '0'		;转换成ascii
+	jmp .store
+.is_A2F:
+	sub edx, 10
+	add edx, 'A'
+
+;数字转换成 ascii 之后，按大端顺序存储到 buffer 中
 .store:
-  mov [put_int_buff+edi], dl 
-  ; 取下一个 16 进制数
-  shr eax, 4
-  mov edx, eax 
-  dec edi 
-  cmp edi, 0
-  jge .base16_4
-  
-  ; 程序执行到这里，put_int_buff 里已经装好了转换成 16 进制的数
-  ; 现在要做的是去掉前面多余的 0，比如 000123 变成 123
-  ; 现在 edi == -1, 把它变成 0
-  xor edi, edi 
-.skip_zero:
-  cmp edi, 8
-  jz .full_zero
-  mov cl, [put_int_buff + edi]
-  cmp cl, '0'
-  inc edi 
-  jz .skip_zero
-  ; 代码执行到这里，表示原来 edi 所指的位置不为 0，但是现在 edi 又加 1 了，所以要减回去
-  dec edi 
-  jmp .print_one_char
-.full_zero:
-  mov edi, 7
-.print_one_char:
-  xor ecx, ecx ; 把 ecx 清空
-  mov cl, [put_int_buff + edi]
-  push ecx 
-  call put_char
-  add esp, 4
-  inc edi
-  cmp edi, 8
-  jl .print_one_char
-  popad 
-  ret 
-  
-  
-  
-  
+	mov [ebx + edi] , dl	;加上7个字节存储，也就是存储在最前面的位置上
+	dec edi
+	shr eax, 4		;将参数数字最后一个字符去掉
+	mov edx, eax
+	loop .based16_4bits
+
+;此时 buffer 中是 ascii 了，打印之前把高位连续数字去掉
+.ready_to_print:
+	inc edi			;让 edi+1 变成 0
+.skip_prefix_0:
+	cmp edi, 8		;若已经是第九个字符了
+	je .full0		;表示全是 0
+
+;找出连续的 0 字符，edi 作为非 0 最高位偏移
+.go_on_skip:
+	mov cl, [put_int_buffer + edi]
+	cmp cl, '0'
+	je .ready_to_print;.skip_prefix_0	;等于0就跳转，判断下一位是否是字符0
+	;dec edi				;书上说：反之就恢复前面指向的下一个字符，就是转到非 0 字符的第一个
+						;实际上这么跳转是死循环，书上写的有问题，跳转也有问题！
+	jmp .put_each_num
+	
+.full0:
+	mov cl, '0'		;当全 0 ，只打印一个 0
+	
+.put_each_num:
+	push ecx
+	call put_char
+	add esp, 4
+	inc edi
+	mov cl, [put_int_buffer + edi]
+	cmp edi, 8
+	jl .put_each_num
+	popad
+	ret
+	
