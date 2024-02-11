@@ -5,6 +5,7 @@ SELECTOR_VIDEO	equ	(0x0003 << 3) + TI_GDT + RPL0
 
 [bits 32]
 section .text 
+put_int_buff dq 0
 
 ; 在汇编语言中，用 global 修饰的函数，可以被外部调用
 global put_char
@@ -151,4 +152,61 @@ put_str:
   pop ecx 
   pop ebx
   ret
+
+global put_int
+put_int:
+  pushad 
+  mov edi, 7
+  mov ebp, esp 
+  ; 36 = pushad 的 8 个寄存器 + put_int 的返回地址
+  ; 获取 put_int 入参
+  mov eax, [esp+36] 
+  mov edx, eax 
+.base16_4:
+  ; 获取 1 位十六进制数
+  and edx, 0x0000000F
+  cmp edx, 9
+  ; 如果超过 9，那就要打印 A-F
+  jg .A2F
+  add dl, '0'
+  jmp .store
+.A2F:
+  sub dl, 'A'
+  add dl, 'A'
+.store:
+  mov [put_int_buff+edi], dl 
+  ; 取下一个 16 进制数
+  shr eax, 4
+  mov edx, eax 
+  dec edi 
+  cmp edi, 0
+  jge .base16_4
+  
+  ; 程序执行到这里，put_int_buff 里已经装好了转换成 16 进制的数
+  ; 现在要做的是去掉前面多余的 0，比如 000123 变成 123
+  ; 现在 edi == -1, 把它变成 0
+  xor edi, edi 
+.skip_zero:
+  cmp edi, 8
+  jgz .full_zero
+  mov cl, [put_int_buff + edi]
+  cmp cl, '0'
+  inc edi 
+  jz .skip_zero
+.full_zero:
+  mov edi, 7
+.print_one_char:
+  xor ecx, ecx ; 把 ecx 清空
+  mov cl, [put_int_buff + edi]
+  push ecx 
+  call put_char
+  add esp, 4
+  inc edi
+  cmp edi, 8
+  jl .print_one_char
+  popad 
+  ret 
+  
+  
+  
   
