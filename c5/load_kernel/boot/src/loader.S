@@ -137,8 +137,8 @@ p_mode_start:
 	;开启分页后，用gdt新的地址重新加载
 	lgdt [gdt_ptr]
 
-	mov eax, SELECTOR_VIDEO
-	mov gs, eax
+	mov ax, SELECTOR_VIDEO
+	mov gs, ax
 	mov byte [gs :320], 'V'
   
   jmp SELECTOR_CODE:enter_kernel
@@ -176,7 +176,9 @@ kernel_init:
   push dword [ebx + 16]
   
   ; src 获取程序头的起始偏移字节，然后压栈  
-  push dword [ebx + 4]
+  mov eax, [ebx + 4] ; 获取程序头的 p_offset
+  add eax, KERNEL_BIN_BASE_ADDR
+  push eax 
   
   ; dst 获取程序头在内存中的虚拟地址，然后压栈
   push dword [ebx + 8]
