@@ -128,5 +128,27 @@ put_char:
 	popad
 	ret
 
+global put_str
+put_str:
+  push ebx 
+  push ecx 
+  xor ecx, ecx 
+  ; 这里 12 是指前面两个 push 命令以及 put_str 的返回地址（4个字节）
+  ; 因为压栈后，esp 是减小的
+  mov ebx, [esp + 12]
+.goon:
+  mov cl, [ebx]
+  cmp cl, 0   ; 遇到字符串尾，直接结束
+  jz .str_over
+  push ecx  ; 给 put_char 传递参数
+  call put_char
+  add esp, 4
+  inc ebx
+  jmp .goon
+  
 
+.str_over:
+  pop ecx 
+  pop ebx
+  ret
   
