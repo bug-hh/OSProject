@@ -188,11 +188,14 @@ put_int:
   xor edi, edi 
 .skip_zero:
   cmp edi, 8
-  jgz .full_zero
+  jz .full_zero
   mov cl, [put_int_buff + edi]
   cmp cl, '0'
   inc edi 
   jz .skip_zero
+  ; 代码执行到这里，表示原来 edi 所指的位置不为 0，但是现在 edi 又加 1 了，所以要减回去
+  dec edi 
+  jmp .print_one_char
 .full_zero:
   mov edi, 7
 .print_one_char:
