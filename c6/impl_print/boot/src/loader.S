@@ -176,7 +176,9 @@ kernel_init:
   push dword [ebx + 16]
   
   ; src 获取程序头的起始偏移字节，然后压栈  
-  push dword [ebx + 4]
+  mov eax, [ebx + 4] ; 获取程序头的 p_offset
+  add eax, KERNEL_BIN_BASE_ADDR
+  push eax 
   
   ; dst 获取程序头在内存中的虚拟地址，然后压栈
   push dword [ebx + 8]
@@ -269,39 +271,6 @@ setup_page:
     add eax, 0x1000
     loop .create_kernel_pde
     ret 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ;----读取文件到内存----
 ;参数
