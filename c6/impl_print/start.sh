@@ -20,7 +20,7 @@ dd if=./boot/bin/loader.binary of=../../hd60M.img bs=512 count=3 seek=2 conv=not
 # use 32 bit
 nasm -f elf -o lib/kernel/print.o lib/kernel/print.S
 
-gcc -m32 -c -o kernel/obj/main.o kernel/src/main.c
+gcc -m32 -I lib/kernel -c -o kernel/obj/main.o kernel/src/main.c
 
 ld -m elf_i386 -Ttext 0xc0001500 -e main -o kernel/bin/kernel.binary kernel/obj/main.o lib/kernel/print.o
 
