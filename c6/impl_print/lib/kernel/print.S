@@ -110,7 +110,7 @@ put_char:
 .set_cursor:
   mov dx, 0x3d4
   mov al, 0xe
-  mov dx, al  ; 设置坐标高八位
+  out dx, al  ; 设置坐标高八位
   
   mov dx, 0x3d5
   mov al, bh 
@@ -118,7 +118,7 @@ put_char:
   
   mov dx, 0x3d4
   mov al, 0xf 
-  mov dx, al  ; 设置坐标低八位
+  out dx, al  ; 设置坐标低八位
   
   mov dx, 0x3d5
   mov al, bl 
