@@ -25,7 +25,7 @@ gcc -m32 -I lib/ -I lib/kernel -I kernel/src -c -o kernel/obj/main.o kernel/src/
 gcc -m32 -I lib/ -I lib/kernel -I kernel/src -c -o kernel/obj/interrupt.o kernel/src/interrupt.c
 gcc -m32 -I lib/ -I lib/kernel -I kernel/src -c -o kernel/obj/init.o kernel/src/init.c
 
-ld -m elf_i386 -Ttext 0xc0001500 -e main -o kernel/bin/kernel.binary kernel/obj/main.o lib/kernel/print.o kernel/obj/interrupt.o kernel/obj/init.o
+ld -m elf_i386 -Ttext 0xc0001500 -e main -o kernel/bin/kernel.binary kernel/obj/main.o kernel/obj/kernel.o lib/kernel/print.o kernel/obj/interrupt.o kernel/obj/init.o
 
 dd if=kernel/bin/kernel.binary of=../../hd60M.img bs=512 count=200 seek=9 conv=notrunc
 
