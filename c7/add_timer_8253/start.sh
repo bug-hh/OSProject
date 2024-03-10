@@ -23,7 +23,7 @@ nasm -f elf -o kernel/obj/kernel.o kernel/src/kernel.S
 
 gcc -m32 -I lib/ -I lib/kernel -I kernel/src -c -o kernel/obj/main.o kernel/src/main.c
 gcc -m32 -I lib/ -I lib/kernel -I kernel/src -c -o kernel/obj/interrupt.o kernel/src/interrupt.c
-gcc -m32 -I lib/ -I lib/kernel -I kernel/src -c -o kernel/obj/init.o kernel/src/init.c
+gcc -m32 -I lib/ -I lib/kernel -I kernel/src -I device/src -c -o kernel/obj/init.o kernel/src/init.c
 gcc -m32 -I lib/ -I lib/kernel -I kernel/src -I device/src -c -o device/obj/timer.o device/src/timer.c
 
 ld -m elf_i386 -Ttext 0xc0001500 -e main -o kernel/bin/kernel.binary kernel/obj/main.o kernel/obj/kernel.o lib/kernel/print.o kernel/obj/interrupt.o device/obj/timer.o kernel/obj/init.o
