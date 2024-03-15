@@ -58,7 +58,7 @@ $(BUILD_DIR)/loader.binary: boot/src/loader.S
 .PHONY : mk_dir hd clean all
 
 mk_dir:
-	if [[ ! -d $(BUILD_DIR) ]];then mkdir $(BUILD_DIR);fi
+	if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
 
 hd:
 	dd if=$(BUILD_DIR)/mbr.binary \
