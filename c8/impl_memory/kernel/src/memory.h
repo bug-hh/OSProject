@@ -11,6 +11,6 @@ struct virtual_addr {
 };
 
 extern struct pool kernel_pool, user_pool;
-void mem_init();
+void mem_init(void);
 
 #endif
