@@ -2,6 +2,7 @@
 #include "stdint.h"
 #include "print.h"
 #include "global.h"
+#include "debug.h"
 
 #define PG_SIZE 4096
 
