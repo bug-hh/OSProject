@@ -3,8 +3,9 @@ ENTRY_POINT = 0xc0001500
 AS = nasm
 CC = gcc
 LD = ld
+USER_NAME = $(shell whoami)
 ASLIB = -I boot/src/include/
-LIB = -I lib/ -I lib/kernel/ -I lib/user/ -I kernel/src -I device/src
+LIB = -I lib/ -I lib/kernel/ -I lib/user/ -I kernel/src -I device/src -I thread/
 ASFLAGS = -f elf
 CFLAGS = -m32 -Wall $(LIB) -c -fno-builtin -W -Wstrict-prototypes \
          -Wmissing-prototypes 
@@ -12,7 +13,7 @@ LDFLAGS = -m elf_i386 -Ttext $(ENTRY_POINT) -e main -Map $(BUILD_DIR)/kernel.map
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/init.o $(BUILD_DIR)/interrupt.o \
       $(BUILD_DIR)/timer.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/print.o \
       $(BUILD_DIR)/debug.o $(BUILD_DIR)/memory.o $(BUILD_DIR)/bitmap.o \
-	  $(BUILD_DIR)/string.o $(BUILD_DIR)/thread.o
+	  $(BUILD_DIR)/string.o $(BUILD_DIR)/thread.o 
 
 ##############     c代码编译     ###############
 $(BUILD_DIR)/main.o: kernel/src/main.c lib/kernel/print.h \
@@ -49,9 +50,7 @@ $(BUILD_DIR)/memory.o: kernel/src/memory.c kernel/src/memory.h lib/stdint.h lib/
 	lib/kernel/io.h kernel/src/interrupt.h lib/string.h lib/stdint.h
 	$(CC) $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/thread.o: lib/thread/thread.c lib/thread/thread.h lib/stdint.h \
-kernel/src/memory.c kernel/src/memory.h kernel/src/global.h \ 
-lib/string.c lib/string.h 
+$(BUILD_DIR)/thread.o: thread/thread.c thread/thread.h lib/stdint.h kernel/src/memory.h kernel/src/global.h lib/string.h 
 	$(CC) $(CFLAGS) $< -o $@
 
 ##############    汇编代码编译    ###############
@@ -74,14 +73,14 @@ mk_dir:
 	if [[ ! -d $(BUILD_DIR) ]];then mkdir $(BUILD_DIR);fi
 
 hd_mbr:
-	dd if=$(BUILD_DIR)/mbr.bin of=/home/bughh/OSProject/hd60M.img bs=512 count=1 seek=0 conv=notrunc
+	dd if=$(BUILD_DIR)/mbr.bin of=/home/$(USER_NAME)/OSProject/hd60M.img bs=512 count=1 seek=0 conv=notrunc
 
 hd_loader:
-	dd if=$(BUILD_DIR)/loader.bin of=/home/bughh/OSProject/hd60M.img bs=512 count=3 seek=2 conv=notrunc
+	dd if=$(BUILD_DIR)/loader.bin of=/home/$(USER_NAME)/OSProject/hd60M.img bs=512 count=3 seek=2 conv=notrunc
 
 hd_kernel:
 	dd if=$(BUILD_DIR)/kernel.bin \
-           of=/home/bughh/OSProject/hd60M.img \
+           of=/home/$(USER_NAME)/OSProject/hd60M.img \
            bs=512 count=200 seek=9 conv=notrunc
 
 clean:
@@ -90,6 +89,6 @@ clean:
 build: $(BUILD_DIR)/mbr.bin $(BUILD_DIR)/loader.bin $(BUILD_DIR)/kernel.bin
 
 start:
-	bochs -f /home/bughh/OSProject/bochsrc.disk
+	bochs -f /home/$(USER_NAME)/OSProject/bochsrc.disk
 
 all: mk_dir build hd_mbr hd_loader hd_kernel start

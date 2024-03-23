@@ -3,6 +3,7 @@ ENTRY_POINT = 0xc0001500
 AS = nasm
 CC = gcc
 LD = ld
+USER_NAME = $(shell whoami)
 ASLIB = -I boot/src/include/
 LIB = -I lib/ -I lib/kernel/ -I lib/user/ -I kernel/src -I device/src
 ASFLAGS = -f elf
@@ -69,14 +70,14 @@ mk_dir:
 	if [[ ! -d $(BUILD_DIR) ]];then mkdir $(BUILD_DIR);fi
 
 hd_mbr:
-	dd if=$(BUILD_DIR)/mbr.bin of=/home/bughh/OSProject/hd60M.img bs=512 count=1 seek=0 conv=notrunc
+	dd if=$(BUILD_DIR)/mbr.bin of=/home/$(USER_NAME)/OSProject/hd60M.img bs=512 count=1 seek=0 conv=notrunc
 
 hd_loader:
-	dd if=$(BUILD_DIR)/loader.bin of=/home/bughh/OSProject/hd60M.img bs=512 count=3 seek=2 conv=notrunc
+	dd if=$(BUILD_DIR)/loader.bin of=/home/$(USER_NAME)/OSProject/hd60M.img bs=512 count=3 seek=2 conv=notrunc
 
 hd_kernel:
 	dd if=$(BUILD_DIR)/kernel.bin \
-           of=/home/bughh/OSProject/hd60M.img \
+           of=/home/$(USER_NAME)/OSProject/hd60M.img \
            bs=512 count=200 seek=9 conv=notrunc
 
 clean:
@@ -85,6 +86,6 @@ clean:
 build: $(BUILD_DIR)/mbr.bin $(BUILD_DIR)/loader.bin $(BUILD_DIR)/kernel.bin
 
 start:
-	bochs -f /home/bughh/OSProject/bochsrc.disk
+	bochs -f /home/$(USER_NAME)/OSProject/bochsrc.disk
 
 all: mk_dir build hd_mbr hd_loader hd_kernel start

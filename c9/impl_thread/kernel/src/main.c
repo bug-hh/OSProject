@@ -17,8 +17,7 @@ int main() {
 
 void k_thread_a(void* arg) {
   char* para = arg;
-  int i = 0;
-  while(i++<10) {
+  while(1) {
     put_str(para);
   }
 }
