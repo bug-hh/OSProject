@@ -40,6 +40,8 @@ void init_thread(struct task_struct* pthread, char* name, int prio) {
 struct task_struct* thread_start(char* name, int prio, thread_func function, void* func_arg) {
   struct task_struct* thread = get_kernel_pages(1);
   init_thread(thread, name, prio);
+  
+  thread_create(thread, function, func_arg);
   /*
   movl l 表示操作数是 32 位的
   volatile 告诉编译器，不要修改我的汇编代码

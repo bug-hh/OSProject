@@ -52,7 +52,7 @@ static void mem_pool_init(uint32_t all_mem) {
   // 操作系统占 256 个页表，1个页表的大小是 4M
   uint32_t page_table_size = PG_SIZE * 256;
   // 页表本身占用的内存 + 内核占用的内存
-  uint32_t used_mem = page_table_size + 0x10000;
+  uint32_t used_mem = page_table_size + 0x100000;
   uint32_t free_mem = all_mem - used_mem;
   uint16_t all_free_pages = free_mem / PG_SIZE;
   
