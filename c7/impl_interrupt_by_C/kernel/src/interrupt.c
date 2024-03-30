@@ -11,6 +11,7 @@
 
 #define IDT_DESC_CNT 0x21	 // 目前总共支持的中断数
 
+// 结构体中，位置越偏下的成员，其地址越高
 struct gate_desc {
   uint16_t func_offset_low_word;
   uint16_t selector;
@@ -74,6 +75,8 @@ static void general_intr_handler(uint8_t vec_nr) {
   }
   put_str("int vector: 0x");
   put_int(vec_nr);
+  put_char('\n');
+  put_str(intr_name[vec_nr]);
   put_char('\n');
 }
 
