@@ -75,9 +75,26 @@ static void general_intr_handler(uint8_t vec_nr) {
   if (vec_nr == 0x27 || vec_nr == 0x2f) {
     return;
   }
-  put_str("int vector: 0x");
-  put_int(vec_nr);
-  put_char('\n');
+  set_cursor(0);
+  int cursor_pos = 0;
+  while (cursor_pos < 320) {
+    put_char(' ');
+    cursor_pos++;
+  }
+  set_cursor(0);
+  put_str("!!! exception message begin !!!\n");
+  set_cursor(88);
+  put_str(intr_name[vec_nr]);
+  if (vec_nr == 14) {
+    // 发生了 page fault 中断, CPU 会把 产生页中断的虚拟地址放到 CR2 寄存器里
+    int page_fault_vaddr = 0;
+    asm ("movl %%cr2, %0" : "=r" (page_fault_vaddr));
+    put_str("\n page fault addr is ");
+    put_int(page_fault_vaddr);
+    put_str("\n!!! exception message end !!!\n");
+  }
+  // 进入中断处理程序时，已经关中断了，所以下面的循环不会被中断
+  while(1);
 }
 
 static void exception_init() {
@@ -154,4 +171,7 @@ void idt_init() {
   put_str("idt_init done\n");
 }
 
+void register_handler(uint8_t vector_no, intr_handler function) {
+  idt_table[vector_no] = function;
+}
 

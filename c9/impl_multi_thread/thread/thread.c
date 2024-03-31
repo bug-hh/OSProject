@@ -88,3 +88,34 @@ static void make_main_thread(void) {
   ASSERT(!elem_find(&thread_all_list, &main_thread->all_list_tag));
   list_append(&thread_all_list, &main_thread->all_list_tag);
 }
+
+void schedule() {
+  ASSERT(intr_get_status() == INTR_OFF);
+  
+  struct task_struct* cur = running_thread();
+  if (cur->status == TASK_RUNNING) {
+    ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
+    list_append(&thread_ready_list, &cur->general_tag);
+    cur->ticks = cur->priority;
+    
+    cur->status = TASK_READY;
+  } else {
+    
+  }
+  
+  ASSERT(!list_empty(&thread_ready_list));
+  // thread_tag 是个全局标志
+  thread_tag = NULL;
+  thread_tag = list_pop(&thread_ready_list);
+  struct task_struct* next = elem2entry(struct task_struct, general_tag, thread_tag);
+  next->status = TASK_RUNNING;
+  switch_to(cur, next);
+}
+
+void thread_init(void) {
+  put_str("thread_init start\n");
+  list_init(&thread_ready_list);
+  list_init(&thread_all_list);
+  make_main_thread();
+  put_str("thread_init done\n");
+}
