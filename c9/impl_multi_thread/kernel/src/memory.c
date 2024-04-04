@@ -110,12 +110,11 @@ static void mem_pool_init(uint32_t all_mem) {
 
 void mem_init() {
   put_str("mem_init start\n");
-  //通过bios获取的内存有 512M,但是书上是 32M，所以直接写了个 32M
-  //uint32_t mem_bytes_total = (*(uint32_t*)(0xb00));
-  //put_str("memory size: ");
-  //put_int(mem_bytes_total);
-  //put_str("\n");
-  uint32_t mem_bytes_total = 33554432;
+  //通过bios获取的内存有 32M
+  uint32_t mem_bytes_total = (*(uint32_t*)(0xb00));
+  put_str("memory size: ");
+  put_int(mem_bytes_total);
+  put_str("\n");
   mem_pool_init(mem_bytes_total);
   put_str("mem_init done\n");
 }

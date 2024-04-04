@@ -2,7 +2,6 @@
 SECTION LOADER vstart=LOADER_BASE_ADDR
 LOADER_STACK_TOP	equ	LOADER_BASE_ADDR
 
-jmp loader_start 
 ; 构建 gdt，gdt 本质上是一段内存区域，每 8 个字节一个表项，即段描述符
 ; dd 指令定义双字，一个字 = 两个字节，所有 dd 就是定义 4 个字节
 ; 规定 第 0 个表项没有用，所以全部定义为 0
@@ -144,6 +143,9 @@ loader_start:
 	jmp dword SELECTOR_CODE:p_mode_start	;刷新流水线
 						;流水线是CPU 的工作方式，会把当前指令和后面的几个指令同时放在流水线中重叠执行，由于之前的代码是16位，接下来的代码变成32位了，指令按照16位进行译码会出错，通过刷新流水线可以解决这个问题
 
+.error_hlt:         ;出错则挂起
+   hlt
+   
 [bits 32]
 p_mode_start:
 	;初始化为32位的段寄存器
