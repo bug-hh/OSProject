@@ -1,6 +1,5 @@
 %include "boot.inc"
 SECTION LOADER vstart=LOADER_BASE_ADDR
-LOADER_STACK_TOP	equ	LOADER_BASE_ADDR
 
 ; 构建 gdt，gdt 本质上是一段内存区域，每 8 个字节一个表项，即段描述符
 ; dd 指令定义双字，一个字 = 两个字节，所有 dd 就是定义 4 个字节
@@ -154,11 +153,8 @@ p_mode_start:
 	mov es, ax
 	mov ss, ax
 	mov esp, LOADER_STACK_TOP
-
-	;显示“P”到屏幕上
 	mov ax, SELECTOR_VIDEO
 	mov gs, ax
-	mov byte [gs:160],'P'
 
 ;----加载 kernel----
 ; 这里把 kernel.bin 从硬盘拷贝到内存的高地址
@@ -197,10 +193,6 @@ p_mode_start:
 	;开启分页后，用gdt新的地址重新加载
 	lgdt [gdt_ptr]
 
-	mov eax, SELECTOR_VIDEO
-	mov gs, eax
-	mov byte [gs :320], 'V'
-  
   jmp SELECTOR_CODE:enter_kernel
 
 enter_kernel:

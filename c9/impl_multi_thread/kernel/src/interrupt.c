@@ -33,23 +33,6 @@ intr_handler idt_table[IDT_DESC_CNT];
 // 引用定义在 kernel.S 中的中断处理函数入口数组
 extern intr_handler intr_entry_table[IDT_DESC_CNT];
 
-// 创建中断门描述符
-static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function) {
-  p_gdesc->func_offset_low_word = (uint32_t)function & 0x0000FFFF;
-  p_gdesc->selector = SELECTOR_K_CODE;
-  p_gdesc->dcount = 0;
-  p_gdesc->attribute = attr;
-  p_gdesc->func_offset_high_word = ((uint32_t)function & 0xFFFF0000) >> 16;
-}
-
-//  初始化中断描述符表
-static void idt_desc_init() {
-  int i;
-  for (i = 0; i < IDT_DESC_CNT; i++) {
-    make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
-  }
-  put_str("   idt_desc_init done\n");
-}
 static void pic_init() {
    /* 初始化主片 */
    outb (PIC_M_CTRL, 0x11);   // ICW1: 边沿触发,级联8259, 需要ICW4.
@@ -69,6 +52,25 @@ static void pic_init() {
 
    put_str("   pic_init done\n");
 }
+
+// 创建中断门描述符
+static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function) {
+  p_gdesc->func_offset_low_word = (uint32_t)function & 0x0000FFFF;
+  p_gdesc->selector = SELECTOR_K_CODE;
+  p_gdesc->dcount = 0;
+  p_gdesc->attribute = attr;
+  p_gdesc->func_offset_high_word = ((uint32_t)function & 0xFFFF0000) >> 16;
+}
+
+//  初始化中断描述符表
+static void idt_desc_init() {
+  int i;
+  for (i = 0; i < IDT_DESC_CNT; i++) {
+    make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
+  }
+  put_str("   idt_desc_init done\n");
+}
+
 
 // 通用的中断处理函数
 static void general_intr_handler(uint8_t vec_nr) {
@@ -91,8 +93,8 @@ static void general_intr_handler(uint8_t vec_nr) {
     asm ("movl %%cr2, %0" : "=r" (page_fault_vaddr));
     put_str("\n page fault addr is ");
     put_int(page_fault_vaddr);
-    put_str("\n!!! exception message end !!!\n");
   }
+  put_str("\n!!! exception message end !!!\n");
   // 进入中断处理程序时，已经关中断了，所以下面的循环不会被中断
   while(1);
 }

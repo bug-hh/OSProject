@@ -25,7 +25,7 @@ void list_insert_before(struct list_elem* before, struct list_elem* elem) {
 
 // 添加元素到队首
 void list_push(struct list* plist, struct list_elem* elem) {
-  list_insert_before(&plist->head, elem);
+  list_insert_before(&plist->head.next, elem);
 }
 
 // 添加元素到队尾
@@ -49,6 +49,17 @@ struct list_elem* list_pop(struct list* plist) {
   return elem;
 }
 
+bool elem_find(struct list* plist, struct list_elem* obj_elem) {
+  struct list_elem* elem = plist->head.next;
+  while (elem != &plist->tail) {
+    if (elem == obj_elem) {
+      return true;
+    }
+    elem = elem->next;
+  }
+  return false;
+}
+
 bool list_empty(struct list* plist) {
   return (plist->head.next == &plist->tail ? true : false);
 }
@@ -69,16 +80,7 @@ struct list_elem* list_traversal(struct list* plist, function func, int arg) {
   }
   return NULL;
 }
-bool elem_find(struct list* plist, struct list_elem* obj_elem) {
-  struct list_elem* elem = plist->head.next;
-  while (elem != &plist->tail) {
-    if (elem == obj_elem) {
-      return true;
-    }
-    elem = elem->next;
-  }
-  return false;
-}
+
 
 uint32_t list_len(struct list* plist) {
   struct list_elem* elem = plist->head.next;

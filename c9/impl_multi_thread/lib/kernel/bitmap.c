@@ -4,7 +4,6 @@
 #include "stdint.h"
 #include "print.h"
 #include "interrupt.h"
-#include "global.h"
 
 void bitmap_init(struct bitmap* btmp) {
   memset(btmp->bits, 0, btmp->btmp_bytes_len);
@@ -48,10 +47,10 @@ int bitmap_scan(struct bitmap* btmp, uint32_t cnt) {
   bit_idx_start = -1;
   while (bit_left-- > 0) {
     // next_bit 位已经被分配了，count 清零
-    if (bitmap_scan_test(btmp, next_bit)) {
-      count = 0;
-    } else {
+    if (!(bitmap_scan_test(btmp, next_bit))) {
       count++;
+    } else {
+      count = 0;
     }
     if (count == cnt) {
       bit_idx_start = next_bit - cnt + 1;
