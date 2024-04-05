@@ -99,3 +99,4 @@ start:
 	bochs -f /home/$(USER_NAME)/OSProject/bochsrc.disk
 
 all: mk_dir build hd_mbr hd_loader hd_kernel start
+#all: mk_dir build hd_mbr hd_loader hd_kernel

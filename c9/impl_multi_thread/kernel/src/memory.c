@@ -142,6 +142,9 @@ void* malloc_page(enum pool_flags pf, uint32_t pg_cnt) {
 
 void* get_kernel_pages(uint32_t pg_cnt) {
   void* vaddr = malloc_page(PF_KERNEL, pg_cnt);
+  put_str("allocate vaddr: ");
+  put_int(vaddr);
+  put_str("\n");
   if (vaddr != NULL) {
     memset(vaddr, 0, pg_cnt * PG_SIZE);
   }
