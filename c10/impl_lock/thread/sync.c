@@ -30,6 +30,9 @@ void sema_down(struct semaphore* psema) {
     // 当前线程主动阻塞自己
     thread_block(TASK_BLOCKED);
   }
+  psema->value--;
+  ASSERT(psema->value == 0);
+  intr_set_status(old_status);
 }
 
 void sema_up(struct semaphore* psema) {
