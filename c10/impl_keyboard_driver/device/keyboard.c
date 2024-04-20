@@ -148,7 +148,7 @@ static void intr_keyboard_handler(void) {
       bool shift = false;
       // 这里表示按下 shift 后代表不同意义的键
       // 比如 数字3，按下shift 再按3，代表 #
-      if ((scancode < 0x0e) || (scancode == 0x29) \
+      if ((scancode < 0x0e)  ||  (scancode == 0x29) || 
           (scancode == 0x1a) || (scancode == 0x1b) \
           (scancode == 0x2b) || (scancode == 0x27) \
           (scancode == 0x28) || (scancode == 0x33) \
